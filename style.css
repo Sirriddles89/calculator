@@ -15,9 +15,15 @@
     border: solid black 2px;
     margin-bottom: 20px;
     display: flex;
+    flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.display > p {
+    margin: 5px;
+    
 }
 
 .buttons {
@@ -35,6 +41,6 @@ button {
     height: 80px;
 }
 
-.big {
+#big1, #big2 {
     width: 125px;
 }
