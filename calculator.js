@@ -21,8 +21,8 @@ function divide(x, y) {
 
 function operate(operand) {
     let curValue = 0;
-    let x = operand.firstNumber;
-    let y = operand.secondNumber;
+    let x = parseInt(operand.firstNumber);
+    let y = parseInt(operand.secondNumber);
     switch(operand.operator) {
         case "+":
            curValue =  add(x, y);
@@ -40,48 +40,48 @@ function operate(operand) {
     return curValue;
 }
 
-function getButton(e) {
-    buttonValue = e.currentTarget;
-    return buttonValue;
-
-}
-
-function updateDisplay(input) {
+function updateDisplay(input, buttonValue) {
     let current = document.querySelector('.currentDigit');
     let progress = document.querySelector('.top');
-    let tmp = current.innerHTML;
     current.innerHTML = input;
-    progress.innerHTML += tmp;
+    progress.innerHTML += buttonValue;
 }
 
 const operand = {};
+let operatorPressed = false;
+let numString = "";
+console.log(numString);
 const buttons = document.querySelectorAll("button");
 buttons.forEach((button) => {
     button.addEventListener('click', (e) => {
         let buttonType = e.target.className;
         let buttonValue = e.target.innerText;
-        let operatorPressed = false;
-        updateDisplay(buttonValue);
-        console.log(buttonValue);
+        numString = numString ? numString + buttonValue : buttonValue;
+        updateDisplay(numString, buttonValue);
         switch (buttonType) {
             case "digit":
-                if (!operand.firstNumber) {
-                    operand.firstNumber = parseInt(buttonValue);
+                if (operatorPressed === false) {
+                    operand.firstNumber = operand.firstNumber ? operand.firstNumber + buttonValue :  buttonValue;
                 }
                 else {
-                    operand.secondNumber = parseInt(buttonValue);
+                    operand.secondNumber = operand.secondNumber ? operand.secondNumber + buttonValue : buttonValue;
                 }
-                break;
+                break; 
             case "operator":
                 if (!operand.operator) {
                     operand.operator = buttonValue;
                     operatorPressed = true;
+                    numString = "";
+
                 }
                 break;
             case "equals":
                 let solution = operate(operand);
-                updateDisplay(solution);
+                buttonValue = "";
+                updateDisplay(solution, buttonValue);
         }
+        console.log(operand);
+        
         
     
     })
