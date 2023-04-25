@@ -40,11 +40,23 @@ function operate(operand) {
     return curValue;
 }
 
-function updateDisplay(input, buttonValue) {
+function updateDisplay(input, buttonType) {
     let current = document.querySelector('.currentDigit');
     let progress = document.querySelector('.top');
     current.innerHTML = input;
-    progress.innerHTML += buttonValue;
+    if (buttonType === "operator" || buttonType === "equals") {
+        progress.innerHTML += input;
+    }
+    else if (buttonType === "allClear") {
+        progress.innerHTML = "";
+        current.innerHTML = "";
+    }
+}
+
+function clearObj(operand) {
+    for (let prop in operand) {
+        delete operand[prop];
+    }
 }
 
 const operand = {};
@@ -57,7 +69,7 @@ buttons.forEach((button) => {
         let buttonType = e.target.className;
         let buttonValue = e.target.innerText;
         numString = numString ? numString + buttonValue : buttonValue;
-        updateDisplay(numString, buttonValue);
+        updateDisplay(numString, buttonType);
         switch (buttonType) {
             case "digit":
                 if (operatorPressed === false) {
@@ -72,13 +84,26 @@ buttons.forEach((button) => {
                     operand.operator = buttonValue;
                     operatorPressed = true;
                     numString = "";
-
+                }
+                else {
+                    operand.firstNumber = operate(operand);
+                    operand.secondNumber = "";
+                    operand.operator = buttonValue;
+                    updateDisplay(operand.firstNumber);
+                    numString = "";
                 }
                 break;
             case "equals":
                 let solution = operate(operand);
-                buttonValue = "";
-                updateDisplay(solution, buttonValue);
+                updateDisplay(solution, buttonType);
+                numString = "";
+                break;
+            case "allClear":
+                clearObj(operand);
+                numString = "";
+                buttonType = "";
+                operatorPressed = false;
+                break;
         }
         console.log(operand);
         
