@@ -117,6 +117,20 @@ buttons.forEach((button) => {
                 updateDisplay(solution, buttonType);
                 numString = "";
                 break;
+            case "backspace":
+                if (operatorPressed === false && operand.firstNumber) {
+                    console.log("currently it is ", operand.firstNumber);
+                    operand.firstNumber = operand.firstNumber.slice(0, -1);
+                    numString = numString.slice(0, -2);
+                    updateDisplay(operand.firstNumber, buttonType);
+                    break;
+                }
+                else {
+                    operand.secondNumber = operand.secondNumber.slice(0, -1);
+                    numString = numString.slice(0, -2);
+                    updateDisplay(operand.secondNumber, buttonType);
+                    break;
+                }    
             case "allClear":
                 clearObj(operand);
                 numString = "";
@@ -140,7 +154,8 @@ buttons.forEach((button) => {
                     operand.operator = "";
                     numString = "";
                     numString += percent;
-                }               
+                }   
+
                 updateDisplay(percent, buttonType);
                 break;
         }
