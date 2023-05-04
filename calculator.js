@@ -47,8 +47,6 @@ function operate(operand) {
 function updateDisplay(input, buttonType) {
     let current = document.querySelector('.currentDigit');
     let progress = document.querySelector('.top');
-    console.log("input = ", input)
-    console.log("typeof = ", typeof(input))
     current.innerHTML = input;
     if (buttonType === "operator" || buttonType === "equals") {
         progress.innerHTML += input;
@@ -57,8 +55,11 @@ function updateDisplay(input, buttonType) {
         progress.innerHTML = "";
         current.innerHTML = "";
     }
-    else if (buttonType === "percentage") {
+    else if (buttonType === "percentage" || buttonType === "falseEquals") {
         progress.innerHTML = "";
+    }
+    else if (buttonType === "clearOperator") {
+        progress.innerHTML = input;
     }
 }
 
@@ -76,7 +77,6 @@ buttons.forEach((button) => {
     button.addEventListener('click', (e) => {
         let buttonType = e.target.className;
         let buttonValue = e.target.innerText;
-        console.log(buttonValue);
         numString = numString ? numString + buttonValue : buttonValue;
         updateDisplay(numString, buttonType);
         switch (buttonType) {
@@ -107,22 +107,37 @@ buttons.forEach((button) => {
                     operand.firstNumber = operate(operand);
                     operand.secondNumber = "";
                     operand.operator = buttonValue;
-                    updateDisplay(operand.firstNumber);
+                    updateDisplay(operand.firstNumber, buttonType);
                     numString = "";
                 }
                 break;
             case "equals":
+                if (!operand.firstNumber && !operand.secondNumber) {
+                    numString = "";
+                    updateDisplay("", "falseEquals")
+                    break;
+                }
+                else if (operand.firstNumber && !operand.secondNumber) {
+                    updateDisplay(operand.firstNumber, "falseEquals");
+                    numString = numString.slice(0, -1);
+                    break;
+                }
                 let solution = operate(operand);
-                console.log(solution);
                 updateDisplay(solution, buttonType);
                 numString = "";
                 break;
             case "backspace":
                 if (operatorPressed === false && operand.firstNumber) {
-                    console.log("currently it is ", operand.firstNumber);
                     operand.firstNumber = operand.firstNumber.slice(0, -1);
                     numString = numString.slice(0, -2);
                     updateDisplay(operand.firstNumber, buttonType);
+                    break;
+                }
+                else if (operand.firstNumber && operand.operator && !operand.secondNumber) {
+                    operand.operator = "";
+                    numString = numString.slice(0, -2);
+                    updateDisplay(operand.firstNumber, "clearOperator");
+                    operatorPressed = false;
                     break;
                 }
                 else {
@@ -159,7 +174,9 @@ buttons.forEach((button) => {
                 updateDisplay(percent, buttonType);
                 break;
         }
+        
         console.log(operand);
+        console.log(numString);
         
         
     
