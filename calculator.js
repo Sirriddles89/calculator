@@ -24,24 +24,24 @@ function percentage(x) {
 }
 
 function operate(operand) {
-    let curValue = 0;
+    let result = 0;
     let x = parseFloat(operand.firstNumber);
     let y = parseFloat(operand.secondNumber);
     switch(operand.operator) {
         case "+":
-           curValue =  add(x, y);
+            result =  add(x, y);
            break;
         case "-":
-            curValue = subtract(x, y); 
+            result = subtract(x, y); 
             break;
         case "\u00D7":
-            curValue = multiply(x, y);
+            result = multiply(x, y);
             break;
         case "\u00F7":
-            curValue = divide(x, y);
+            result = divide(x, y);
             break;
     }
-    return curValue;
+    return result;
 }
 
 function updateDisplay(input, buttonType) {
@@ -69,6 +69,23 @@ function clearObj(operand) {
     }
 }
 
+function digitCase(operatorPressed, operand, buttonValue) {
+    if (operatorPressed) {
+      operand.secondNumber = (operand.secondNumber || '') + buttonValue;
+    } else {
+      operand.firstNumber = (operand.firstNumber || '') + buttonValue;
+    }
+  }
+
+function decimalPoint(operatorPressed, operand, buttonValue) {
+    if (operatorPressed === false) {
+        operand.firstNumber += buttonValue;
+    }
+    else {
+        operand.secondNumber += buttonValue;
+    }
+}
+
 const operand = {};
 let operatorPressed = false;
 let numString = "";
@@ -81,20 +98,10 @@ buttons.forEach((button) => {
         updateDisplay(numString, buttonType);
         switch (buttonType) {
             case "digit":
-                if (operatorPressed === false) {
-                    operand.firstNumber = operand.firstNumber ? operand.firstNumber + buttonValue :  buttonValue;
-                }
-                else {
-                    operand.secondNumber = operand.secondNumber ? operand.secondNumber + buttonValue : buttonValue;
-                }
+                digitCase(operatorPressed, operand, buttonValue);
                 break;
             case "decimalPoint":
-                if (operatorPressed === false) {
-                    operand.firstNumber += buttonValue;
-                }
-                else {
-                    operand.secondNumber += buttonValue;
-                }
+                decimalPoint(operatorPressed, operand, buttonValue);
                 break;
 
             case "operator":
