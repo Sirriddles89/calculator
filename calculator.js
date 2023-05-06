@@ -2,23 +2,19 @@ function add(x, y) {
     let sum = parseFloat(x) + parseFloat(y);
     return sum;
 }
-
 function subtract(x, y) {
     let difference = x - y;
     return difference;
 }
-
 function multiply(x, y) {
     let product = x * y;
     return product;
 }
-
 function divide(x, y) {
     let quotient = x / y;
     return quotient;
 
 }
-
 function percentage(x) {
     return x = x / 100;
 }
@@ -47,19 +43,23 @@ function operate(operand) {
 function updateDisplay(input, buttonType) {
     let current = document.querySelector('.currentDigit');
     let progress = document.querySelector('.top');
-    current.innerHTML = input;
-    if (buttonType === "operator" || buttonType === "equals") {
-        progress.innerHTML += input;
-    }
-    else if (buttonType === "allClear") {
-        progress.innerHTML = "";
+    let tmp = "";
+    if (buttonType === "backspace") {
+        input = "";
+        current.innerHTML = current.innerHTML.slice(0, -1)
+        tmp = tmp.slice(0, -1);
+        progress.innerHTML = progress.innerHTML.slice(0, -1);
+    } 
+    current.innerHTML += input;
+    tmp += input;
+    progress.innerHTML += tmp;
+    if (buttonType === "operator") {
         current.innerHTML = "";
-    }
-    else if (buttonType === "percentage" || buttonType === "falseEquals") {
+    } else if (buttonType === "equals" || buttonType === "percentage") {
+        current.innerHTML = input;
+    } else if(buttonType === "allClear") {
+        current.innerHTML = "";
         progress.innerHTML = "";
-    }
-    else if (buttonType === "clearOperator") {
-        progress.innerHTML = input;
     }
 }
 
@@ -75,7 +75,7 @@ function digitCase(operatorPressed, operand, buttonValue) {
     } else {
       operand.firstNumber = (operand.firstNumber || '') + buttonValue;
     }
-  }
+}
 
 function decimalPoint(operatorPressed, operand, buttonValue) {
     if (operatorPressed === false) {
@@ -83,6 +83,50 @@ function decimalPoint(operatorPressed, operand, buttonValue) {
     }
     else {
         operand.secondNumber += buttonValue;
+    }
+}
+function operatorCase(operand, buttonValue) {
+    if (!operand.operator) {
+        operand.operator = buttonValue;
+    } else {
+        operand.firstNumber = operate(operand);
+        operand.secondNumber = "";
+        operand.operator = buttonValue;
+        updateDisplay(`${operand.firstNumber}${buttonValue}`);
+    }
+
+}
+function equalsCase(operand, buttonType) {
+    let solution = operate(operand);
+    updateDisplay(solution, buttonType);
+}
+function updateString(numString, buttonValue) {
+    numString = numString ? numString + buttonValue : buttonValue;
+    return numString;
+}
+function clearString(numString) {
+    numString = "";
+    return numString;
+}
+function backspace(operand, operatorPressed) {
+    if (operatorPressed && operand.secondNumber) {
+        operand.secondNumber = operand.secondNumber.slice(0, -1);
+    } else if (operatorPressed && !operand.secondNumber) {
+        operand.operator = "";
+        operatorPressed = false;
+    } else {
+        operand.firstNumber = operand.firstNumber.slice(0, -1);
+    }
+    return operatorPressed;
+    
+}
+function percentCase(operand) {
+    if (operand.secondNumber) {
+        operand.secondNumber = percentage(operand.secondNumber);
+        return operand.secondNumber;
+    } else {
+        operand.firstNumber = percentage(operand.firstNumber);
+        return operand.firstNumber;
     }
 }
 
@@ -94,7 +138,7 @@ buttons.forEach((button) => {
     button.addEventListener('click', (e) => {
         let buttonType = e.target.className;
         let buttonValue = e.target.innerText;
-        numString = numString ? numString + buttonValue : buttonValue;
+        numString = updateString(numString, buttonValue);
         updateDisplay(numString, buttonType);
         switch (buttonType) {
             case "digit":
@@ -103,92 +147,35 @@ buttons.forEach((button) => {
             case "decimalPoint":
                 decimalPoint(operatorPressed, operand, buttonValue);
                 break;
-
             case "operator":
-                if (!operand.operator) {
-                    operand.operator = buttonValue;
-                    operatorPressed = true;
-                    numString = "";
-                }
-                else {
-                    operand.firstNumber = operate(operand);
-                    operand.secondNumber = "";
-                    operand.operator = buttonValue;
-                    updateDisplay(operand.firstNumber, buttonType);
-                    numString = "";
-                }
+                operatorCase(operand, buttonValue);
+                operatorPressed = true;
                 break;
             case "equals":
-                if (!operand.firstNumber && !operand.secondNumber) {
-                    numString = "";
-                    updateDisplay("", "falseEquals")
-                    break;
-                }
-                else if (operand.firstNumber && !operand.secondNumber) {
-                    updateDisplay(operand.firstNumber, "falseEquals");
-                    numString = numString.slice(0, -1);
-                    break;
-                }
-                let solution = operate(operand);
-                updateDisplay(solution, buttonType);
-                numString = "";
+                equalsCase(operand, buttonType);
                 break;
             case "backspace":
-                if (operatorPressed === false && operand.firstNumber) {
-                    operand.firstNumber = operand.firstNumber.slice(0, -1);
-                    numString = numString.slice(0, -2);
-                    updateDisplay(operand.firstNumber, buttonType);
-                    break;
-                }
-                else if (operand.firstNumber && operand.operator && !operand.secondNumber) {
-                    operand.operator = "";
-                    numString = numString.slice(0, -2);
-                    updateDisplay(operand.firstNumber, "clearOperator");
-                    operatorPressed = false;
-                    break;
-                }
-                else {
-                    operand.secondNumber = operand.secondNumber.slice(0, -1);
-                    numString = numString.slice(0, -2);
-                    updateDisplay(operand.secondNumber, buttonType);
-                    break;
-                }    
+                operatorPressed = backspace(operand, operatorPressed);
+                break;
             case "allClear":
                 clearObj(operand);
-                numString = "";
-                buttonType = "";
                 operatorPressed = false;
                 break;
             case "percentage":
-                numString = numString.slice(0, -1);
-                let percent;
-                if (!operatorPressed) {
-                    percent = percentage(operand.firstNumber);
-                    operand.firstNumber = percent.toString();
-                    numString = "";
-                    numString += percent;
-                } 
-                else {
-                    num = operate(operand);
-                    percent = percentage(num);
-                    operand.firstNumber = percent.toString();
-                    operand.secondNumber = "";
-                    operand.operator = "";
-                    numString = "";
-                    numString += percent;
-                }   
-
-                updateDisplay(percent, buttonType);
+                let float = percentCase(operand);
+                updateDisplay(float, buttonType);
                 break;
         }
+        numString = clearString(numString);
         
         console.log(operand);
         console.log(numString);
-        
-        
-    
+        console.log(operatorPressed);     
+           
     })
+    
 })
+
 
 
 
