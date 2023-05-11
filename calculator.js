@@ -49,13 +49,19 @@ function updateDisplay(input, buttonType) {
         current.innerHTML = current.innerHTML.slice(0, -1)
         tmp = tmp.slice(0, -1);
         progress.innerHTML = progress.innerHTML.slice(0, -1);
-    } 
+    } else if (buttonType === "percentage") {
+        input = "";
+        tmp += " % = ";
+    }
     current.innerHTML += input;
     tmp += input;
     progress.innerHTML += tmp;
-    if (buttonType === "operator") {
-        current.innerHTML = "";
-    } else if (buttonType === "equals" || buttonType === "percentage") {
+    if (buttonType === "operator" && operatorPressed === true) {
+        current.innerHTML = input;
+    } else if (buttonType === "equals") {
+        current.innerHTML = input;
+        progress.innerHTML = input;
+    } else if (buttonType === "percentage") {
         current.innerHTML = input;
     } else if(buttonType === "allClear") {
         current.innerHTML = "";
@@ -85,28 +91,23 @@ function decimalPoint(operatorPressed, operand, buttonValue) {
         operand.secondNumber += buttonValue;
     }
 }
-function operatorCase(operand, buttonValue) {
+function operatorCase(operand, buttonValue, buttonType) {
     if (!operand.operator) {
         operand.operator = buttonValue;
     } else {
         operand.firstNumber = operate(operand);
         operand.secondNumber = "";
         operand.operator = buttonValue;
-        updateDisplay(`${operand.firstNumber}${buttonValue}`);
+        updateDisplay(`${operand.firstNumber}${buttonValue}`, buttonType);
     }
 
 }
 function equalsCase(operand, buttonType) {
     let solution = operate(operand);
+    operand.firstNumber = solution;
+    operand.operator = "";
+    operand.secondNumber = "";
     updateDisplay(solution, buttonType);
-}
-function updateString(numString, buttonValue) {
-    numString = numString ? numString + buttonValue : buttonValue;
-    return numString;
-}
-function clearString(numString) {
-    numString = "";
-    return numString;
 }
 function backspace(operand, operatorPressed) {
     if (operatorPressed && operand.secondNumber) {
@@ -130,6 +131,17 @@ function percentCase(operand) {
     }
 }
 
+function updateString(numString, buttonValue, buttonType) {
+    if (buttonType === "operator" && operatorPressed) {
+        numString += "="
+        return numString;
+    } else {
+        numString = numString ? numString + buttonValue : buttonValue;
+        return numString;
+    }
+    
+}
+
 const operand = {};
 let operatorPressed = false;
 let numString = "";
@@ -138,7 +150,7 @@ buttons.forEach((button) => {
     button.addEventListener('click', (e) => {
         let buttonType = e.target.className;
         let buttonValue = e.target.innerText;
-        numString = updateString(numString, buttonValue);
+        numString = updateString(numString, buttonValue, buttonType);
         updateDisplay(numString, buttonType);
         switch (buttonType) {
             case "digit":
@@ -148,11 +160,12 @@ buttons.forEach((button) => {
                 decimalPoint(operatorPressed, operand, buttonValue);
                 break;
             case "operator":
-                operatorCase(operand, buttonValue);
+                operatorCase(operand, buttonValue, buttonType);
                 operatorPressed = true;
                 break;
             case "equals":
                 equalsCase(operand, buttonType);
+                operatorPressed = false;
                 break;
             case "backspace":
                 operatorPressed = backspace(operand, operatorPressed);
@@ -163,11 +176,11 @@ buttons.forEach((button) => {
                 break;
             case "percentage":
                 let float = percentCase(operand);
-                updateDisplay(float, buttonType);
+                updateDisplay(float); //Don't pass in the buttonType here or it breaks the updateDisplay function
                 break;
         }
-        numString = clearString(numString);
-        
+        numString = "";
+
         console.log(operand);
         console.log(numString);
         console.log(operatorPressed);     
@@ -175,7 +188,6 @@ buttons.forEach((button) => {
     })
     
 })
-
 
 
 
