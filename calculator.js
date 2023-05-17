@@ -44,50 +44,51 @@ function updateDisplay(input, buttonType) {
     let current = document.querySelector('.currentDigit');
     let progress = document.querySelector('.top');
     let tmp = "";
-    if (buttonType === "backspace") {
-        input = "";
-        current.innerHTML = current.innerHTML.slice(0, -1)
-        tmp = tmp.slice(0, -1);
-        progress.innerHTML = progress.innerHTML.slice(0, -1);
-    } else if (buttonType === "percentage") {
-        input = "";
-        tmp += " % = ";
-    }
     current.innerHTML += input;
     tmp += input;
     progress.innerHTML += tmp;
-    if (buttonType === "operator" && operatorPressed === true) {
-        current.innerHTML = input;
-    } else if (buttonType === "equals") {
+    if (buttonType === "digit" && equalsPressed) {
         current.innerHTML = input;
         progress.innerHTML = input;
+    } else if (buttonType === "backspace") {
+        current.innerHTML = current.innerHTML.slice(0, -1)
+        tmp = tmp.slice(0, -1);
+        progress.innerHTML = progress.innerHTML.slice(0, -1);
+    } else if (buttonType === "operator" && operatorPressed === true) {
+        current.innerHTML = input;
+    } else if (buttonType === "equals") {
+        if (!operand.secondNumber) {
+            current.innerHTML = input;
+            progress.innerHTML = input;
+        }
+        
     } else if (buttonType === "percentage") {
         current.innerHTML = input;
+        current.innerHTML = current.innerHTML.slice(0, 1);
     } else if(buttonType === "allClear") {
         current.innerHTML = "";
         progress.innerHTML = "";
     }
 }
-
 function clearObj(operand) {
     for (let prop in operand) {
         delete operand[prop];
     }
 }
-
 function digitCase(operatorPressed, operand, buttonValue) {
     if (operatorPressed) {
       operand.secondNumber = (operand.secondNumber || '') + buttonValue;
+    } else if (equalsPressed) {
+        operand.firstNumber = buttonValue;
+        equalsPressed = false;
     } else {
       operand.firstNumber = (operand.firstNumber || '') + buttonValue;
     }
 }
-
 function decimalPoint(operatorPressed, operand, buttonValue) {
     if (operatorPressed === false) {
         operand.firstNumber += buttonValue;
-    }
-    else {
+    } else {
         operand.secondNumber += buttonValue;
     }
 }
@@ -100,7 +101,6 @@ function operatorCase(operand, buttonValue, buttonType) {
         operand.operator = buttonValue;
         updateDisplay(`${operand.firstNumber}${buttonValue}`, buttonType);
     }
-
 }
 function equalsCase(operand, buttonType) {
     let solution = operate(operand);
@@ -122,28 +122,36 @@ function backspace(operand, operatorPressed) {
     
 }
 function percentCase(operand) {
+    let float;
     if (operand.secondNumber) {
-        operand.secondNumber = percentage(operand.secondNumber);
-        return operand.secondNumber;
+        float = percentage(operand.secondNumber);
+        operand.secondNumber = float;
     } else {
-        operand.firstNumber = percentage(operand.firstNumber);
-        return operand.firstNumber;
+        float = percentage(operand.firstNumber);
+        operand.firstNumber = float;
     }
+    updateDisplay(float);
 }
-
 function updateString(numString, buttonValue, buttonType) {
     if (buttonType === "operator" && operatorPressed) {
         numString += "="
-        return numString;
+    } else if (buttonType === "backspace") {
+        numString = "";
+    } else if (buttonType === "percentage") {
+        numString = " % = ";
+    } else if (buttonType === "equals" && !operand.secondNumber) {
+        numString = `${operand.firstNumber}${operand.operator}`; // this code keeps the display from going blank if/when the user presses "=" with only 1 number entered. Unfortunately it erases the progress bar so I wonder if there's a better way.
+    } else if (buttonType === "operator" && !operand.firstNumber) {
+        numString = "";
     } else {
         numString = numString ? numString + buttonValue : buttonValue;
-        return numString;
     }
-    
+    return numString;    
 }
 
 const operand = {};
 let operatorPressed = false;
+let equalsPressed = false;
 let numString = "";
 const buttons = document.querySelectorAll("button");
 buttons.forEach((button) => {
@@ -154,18 +162,25 @@ buttons.forEach((button) => {
         updateDisplay(numString, buttonType);
         switch (buttonType) {
             case "digit":
-                digitCase(operatorPressed, operand, buttonValue);
+                digitCase(operatorPressed, operand, buttonValue, equalsPressed);
                 break;
             case "decimalPoint":
                 decimalPoint(operatorPressed, operand, buttonValue);
                 break;
             case "operator":
+                if (!operand.firstNumber) {
+                    break;
+                }
                 operatorCase(operand, buttonValue, buttonType);
                 operatorPressed = true;
                 break;
             case "equals":
+                if (!operand.secondNumber) {
+                    break;
+                }
                 equalsCase(operand, buttonType);
                 operatorPressed = false;
+                equalsPressed = true;
                 break;
             case "backspace":
                 operatorPressed = backspace(operand, operatorPressed);
@@ -175,15 +190,15 @@ buttons.forEach((button) => {
                 operatorPressed = false;
                 break;
             case "percentage":
-                let float = percentCase(operand);
-                updateDisplay(float); //Don't pass in the buttonType here or it breaks the updateDisplay function
+                percentCase(operand);
                 break;
         }
-        numString = "";
+        numString = ""; //clear the string after each button press ("numString" is only ever a single character)
 
         console.log(operand);
         console.log(numString);
-        console.log(operatorPressed);     
+        console.log("OperatorPressed = ", operatorPressed); 
+        console.log("EqualsPressed = ", equalsPressed);    
            
     })
     
