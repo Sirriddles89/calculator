@@ -126,11 +126,16 @@ function percentCase(operand) {
     if (operand.secondNumber) {
         float = percentage(operand.secondNumber);
         operand.secondNumber = float;
+        updateDisplay(`${operand.firstNumber}${operand.operator}${operand.secondNumber}`);
     } else {
         float = percentage(operand.firstNumber);
         operand.firstNumber = float;
+        if (operand.operator) {
+            updateDisplay(`${float}${operand.operator}`);
+        } else {
+            updateDisplay(float);
+        }
     }
-    updateDisplay(float);
 }
 function updateString(numString, buttonValue, buttonType) {
     if (buttonType === "operator" && operatorPressed) {
@@ -162,7 +167,7 @@ buttons.forEach((button) => {
         updateDisplay(numString, buttonType);
         switch (buttonType) {
             case "digit":
-                digitCase(operatorPressed, operand, buttonValue, equalsPressed);
+                digitCase(operatorPressed, operand, buttonValue);
                 break;
             case "decimalPoint":
                 decimalPoint(operatorPressed, operand, buttonValue);
@@ -194,7 +199,6 @@ buttons.forEach((button) => {
                 break;
         }
         numString = ""; //clear the string after each button press ("numString" is only ever a single character)
-
         console.log(operand);
         console.log(numString);
         console.log("OperatorPressed = ", operatorPressed); 
