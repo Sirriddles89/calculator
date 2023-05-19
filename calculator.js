@@ -81,18 +81,22 @@ function digitCase(operatorPressed, operand, buttonValue) {
     } else if (equalsPressed) {
         operand.firstNumber = buttonValue;
         equalsPressed = false;
+        decimalButton.disabled = false;
     } else {
       operand.firstNumber = (operand.firstNumber || '') + buttonValue;
     }
 }
-function decimalPoint(operatorPressed, operand, buttonValue) {
-    if (operatorPressed === false) {
+function decimalPoint(operand, buttonValue) {
+    decimalButton.disabled = true;
+    if (!operatorPressed) {
         operand.firstNumber += buttonValue;
     } else {
         operand.secondNumber += buttonValue;
-    }
+    } 
 }
 function operatorCase(operand, buttonValue, buttonType) {
+    decimalButton.disabled = false;
+    equalsPressed ? equalsPressed = false : null;
     if (!operand.operator) {
         operand.operator = buttonValue;
     } else {
@@ -122,6 +126,7 @@ function backspace(operand, operatorPressed) {
     
 }
 function percentCase(operand) {
+    equalsPressed ? equalsPressed = false : null; //sets "equalsPressed" back to false so the display behaves properly
     let float;
     if (operand.secondNumber) {
         float = percentage(operand.secondNumber);
@@ -130,11 +135,8 @@ function percentCase(operand) {
     } else {
         float = percentage(operand.firstNumber);
         operand.firstNumber = float;
-        if (operand.operator) {
-            updateDisplay(`${float}${operand.operator}`);
-        } else {
-            updateDisplay(float);
-        }
+        updateDisplay(operand.operator ? `${float}${operand.operator}` : float);
+
     }
 }
 function updateString(numString, buttonValue, buttonType) {
@@ -145,7 +147,7 @@ function updateString(numString, buttonValue, buttonType) {
     } else if (buttonType === "percentage") {
         numString = " % = ";
     } else if (buttonType === "equals" && !operand.secondNumber) {
-        numString = `${operand.firstNumber}${operand.operator}`; // this code keeps the display from going blank if/when the user presses "=" with only 1 number entered. Unfortunately it erases the progress bar so I wonder if there's a better way.
+        numString = `${operand.firstNumber}${operand.operator}`; // this code keeps the display from going blank if/when the user presses "=" with only 1 number entered.
     } else if (buttonType === "operator" && !operand.firstNumber) {
         numString = "";
     } else {
@@ -155,6 +157,7 @@ function updateString(numString, buttonValue, buttonType) {
 }
 
 const operand = {};
+let decimalButton = document.querySelector('.decimalPoint');
 let operatorPressed = false;
 let equalsPressed = false;
 let numString = "";
@@ -170,7 +173,7 @@ buttons.forEach((button) => {
                 digitCase(operatorPressed, operand, buttonValue);
                 break;
             case "decimalPoint":
-                decimalPoint(operatorPressed, operand, buttonValue);
+                decimalPoint(operand, buttonValue);
                 break;
             case "operator":
                 if (!operand.firstNumber) {
@@ -193,6 +196,8 @@ buttons.forEach((button) => {
             case "allClear":
                 clearObj(operand);
                 operatorPressed = false;
+                decimalButton.disabled = false;
+                equalsPressed = false;
                 break;
             case "percentage":
                 percentCase(operand);
