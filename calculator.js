@@ -60,14 +60,16 @@ function updateDisplay(input, buttonType) {
         if (!operand.secondNumber) {
             current.innerHTML = input;
             progress.innerHTML = input;
-        }
-        
+        }        
     } else if (buttonType === "percentage") {
         current.innerHTML = input;
         current.innerHTML = current.innerHTML.slice(0, 1);
     } else if(buttonType === "allClear") {
         current.innerHTML = "";
         progress.innerHTML = "";
+    } else if (buttonType === "decimalPoint" && equalsPressed) {
+        current.innerHTML = "0.";
+        progress.innerHTML = "0.";
     }
 }
 function clearObj(operand) {
@@ -77,7 +79,7 @@ function clearObj(operand) {
 }
 function digitCase(operatorPressed, operand, buttonValue) {
     if (operatorPressed) {
-      operand.secondNumber = (operand.secondNumber || '') + buttonValue;
+      operand.secondNumber = (operand.secondNumber || '') + buttonValue; // if a number already exists, append the value to it. If the number is currently blank, simply assign the value to it. 
     } else if (equalsPressed) {
         operand.firstNumber = buttonValue;
         equalsPressed = false;
@@ -88,10 +90,13 @@ function digitCase(operatorPressed, operand, buttonValue) {
 }
 function decimalPoint(operand, buttonValue) {
     decimalButton.disabled = true;
-    if (!operatorPressed) {
-        operand.firstNumber += buttonValue;
+    if (equalsPressed) {
+        operand.firstNumber = buttonValue;
+        equalsPressed = false;
+    } else if (!operatorPressed) {
+        operand.firstNumber = (operand.firstNumber || '') + buttonValue;
     } else {
-        operand.secondNumber += buttonValue;
+        operand.secondNumber = (operand.secondNumber || '') + buttonValue;
     } 
 }
 function operatorCase(operand, buttonValue, buttonType) {
@@ -147,7 +152,8 @@ function updateString(numString, buttonValue, buttonType) {
     } else if (buttonType === "percentage") {
         numString = " % = ";
     } else if (buttonType === "equals" && !operand.secondNumber) {
-        numString = `${operand.firstNumber}${operand.operator}`; // this code keeps the display from going blank if/when the user presses "=" with only 1 number entered.
+        numString = operand.operator ? `${operand.firstNumber}${operand.operator}` : operand.firstNumber;
+
     } else if (buttonType === "operator" && !operand.firstNumber) {
         numString = "";
     } else {
@@ -159,14 +165,14 @@ function updateString(numString, buttonValue, buttonType) {
 function disableOperators() {
         const operatorButtons = document.querySelectorAll('.operator')
         operatorButtons.forEach((button) => {
-        button.disabled = true;
+            button.disabled = true;
     });
 }
 
 function enableOperators() {
         const operatorButtons = document.querySelectorAll('.operator')
         operatorButtons.forEach((button) => {
-        button.disabled = false;
+            button.disabled = false;
     });
 }
 
@@ -201,7 +207,8 @@ buttons.forEach((button) => {
             case "equals":
                 if (!operand.secondNumber) {
                     break;
-                }                
+                }
+                decimalButton.disabled = false;                
                 equalsCase(operand, buttonType);
                 operatorPressed = false;
                 equalsPressed = true;
