@@ -156,6 +156,20 @@ function updateString(numString, buttonValue, buttonType) {
     return numString;    
 }
 
+function disableOperators() {
+        const operatorButtons = document.querySelectorAll('.operator')
+        operatorButtons.forEach((button) => {
+        button.disabled = true;
+    });
+}
+
+function enableOperators() {
+        const operatorButtons = document.querySelectorAll('.operator')
+        operatorButtons.forEach((button) => {
+        button.disabled = false;
+    });
+}
+
 const operand = {};
 let decimalButton = document.querySelector('.decimalPoint');
 let operatorPressed = false;
@@ -171,6 +185,7 @@ buttons.forEach((button) => {
         switch (buttonType) {
             case "digit":
                 digitCase(operatorPressed, operand, buttonValue);
+                enableOperators();
                 break;
             case "decimalPoint":
                 decimalPoint(operand, buttonValue);
@@ -181,11 +196,12 @@ buttons.forEach((button) => {
                 }
                 operatorCase(operand, buttonValue, buttonType);
                 operatorPressed = true;
+                disableOperators();
                 break;
             case "equals":
                 if (!operand.secondNumber) {
                     break;
-                }
+                }                
                 equalsCase(operand, buttonType);
                 operatorPressed = false;
                 equalsPressed = true;
@@ -198,12 +214,16 @@ buttons.forEach((button) => {
                 operatorPressed = false;
                 decimalButton.disabled = false;
                 equalsPressed = false;
+                enableOperators();
                 break;
             case "percentage":
                 percentCase(operand);
                 break;
         }
         numString = ""; //clear the string after each button press ("numString" is only ever a single character)
+        if (!operand.operator) {
+            enableOperators();
+        }
         console.log(operand);
         console.log(numString);
         console.log("OperatorPressed = ", operatorPressed); 
