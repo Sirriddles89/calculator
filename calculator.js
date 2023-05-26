@@ -40,19 +40,27 @@ function operate(operand) {
     return result;
 }
 
+function insertCommas(str) {
+    let result = "";
+    for (let i = str.length - 1, count = 0; i >= 0; i--, count++) {
+      result = str[i] + result;
+      if (count > 0 && count % 3 === 0 && i !== 0) {
+        result = "," + result;
+      }
+    }
+    return result;
+  }
+
 function updateDisplay(input, buttonType) {
     let current = document.querySelector('.currentDigit');
     let progress = document.querySelector('.top');
-    let tmp = "";
     current.innerHTML += input;
-    tmp += input;
-    progress.innerHTML += tmp;
+    progress.innerHTML += input;
     if (buttonType === "digit" && equalsPressed) {
         current.innerHTML = input;
         progress.innerHTML = input;
     } else if (buttonType === "backspace") {
         current.innerHTML = current.innerHTML.slice(0, -1)
-        tmp = tmp.slice(0, -1);
         progress.innerHTML = progress.innerHTML.slice(0, -1);
     } else if (buttonType === "operator" && operatorPressed === true) {
         current.innerHTML = input;
@@ -105,10 +113,11 @@ function operatorCase(operand, buttonValue, buttonType) {
     if (!operand.operator) {
         operand.operator = buttonValue;
     } else {
-        operand.firstNumber = operate(operand);
+        let result = operate(operand); 
+        operand.firstNumber = result;
         operand.secondNumber = "";
         operand.operator = buttonValue;
-        updateDisplay(`${operand.firstNumber}${buttonValue}`, buttonType);
+        updateDisplay(`${result.toLocaleString()}${buttonValue}`, buttonType);
     }
 }
 function equalsCase(operand, buttonType) {
@@ -116,7 +125,7 @@ function equalsCase(operand, buttonType) {
     operand.firstNumber = solution;
     operand.operator = "";
     operand.secondNumber = "";
-    updateDisplay(solution, buttonType);
+    updateDisplay(solution.toLocaleString(), buttonType);
 }
 function backspace(operand, operatorPressed) {
     if (operatorPressed && operand.secondNumber) {
